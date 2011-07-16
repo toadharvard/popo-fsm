@@ -1,8 +1,8 @@
-Django friendly finite state machine support
-============================================
+Finite state machine field for sqlalchemy (based on django-fsm)
+==============================================================
 
-django-fsm adds declarative states management for django models.
-Instead of adding some state field to a django model, and manage it
+sqlalchemy-fsm adds declarative states management for sqlalchemy models.
+Instead of adding some state field to a model, and manage its
 values by hand, you could use FSMState field and mark model methods
 with the `transition` decorator. Your method will contain the side-effects
 of the state change.
@@ -10,24 +10,14 @@ of the state change.
 The decorator also takes a list of conditions, all of which must be met
 before a transition is allowed.
 
-Installation
-------------
-
-    $ pip install django-fsm
-
-Or, for the latest git version
-
-    $ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
-
-
 Usage
 -----
 
 Add FSMState field to you model
-    from django_fsm.db.fields import FSMField, transition
+    from sqlalchemy_fsm import FSMField, transition
 
-    class BlogPost(models.Model):
-        state = FSMField(default='new')
+    class BlogPost(db.Model):
+        state = db.Column(FSMField, nullable = False)
 
 
 Use the `transition` decorator to annotate model methods
@@ -46,7 +36,7 @@ You can use `*` for source, to allow switching to `target` from any state.
 If calling publish() succeeds without raising an exception, the state field
 will be changed, but not written to the database.
 
-    from django_fsm.db.fields import can_proceed
+    from sqlalchemy_fsm import can_proceed
 
     def publish_view(request, post_id):
         post = get_object__or_404(BlogPost, pk=post_id)
@@ -57,14 +47,15 @@ will be changed, but not written to the database.
         post.save()
         return redirect('/')
 
-If you use the transition decorator with the `save` argument set to `True`,
-the new state will be written to the database
 
-    @transition(source='new', target='published', save=True)
-    def publish(self):
-        """
-        Side effects other than changing state goes here
-        """
+If your given function requires arguments to validate, you need to include them
+when calling can_proceed as well as including them when you call the function
+normally. Say publish() required a date for some reason:
+
+    if not can_proceed(post.publish, the_date):
+        raise Http404
+    else:
+        post.publish(the_date)
 
 If you require some conditions to be met before changing state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
@@ -101,59 +92,12 @@ Use the conditions like this:
         Side effects galore
         """
 
-### get_available_FIELD_transitions
 
-You could specify FSMField explicitly in transition decorator.
+How does sqlalchemy-fsm diverge from django-fsm?
+------------------------------------------------
 
-    class BlogPost(models.Model):
-        state = FSMField(default='new')
+* Can't commit data from within transition-decorated functions
 
-        @transition(field=state, source='new', target='published')
-        def publish(self):
-    	    pass
+* No pre/post signals
 
-This allows django_fsm to contribute to model class get_available_FIELD_transitions method,
-that returns list of (target_state, method) available from current model state
-
-### Foreign Key constraints support 
-
-If you store the states in the db table you could use FSMKeyField to
-ensure Foreign Key database integrity.
-
-### Signals
-
-`django_fsm.signals.pre_transition` and `django_fsm.signals.pre_transition` called before 
-and after allowed transition. No signals on invalid transition call.
-
-Arguments sent with these signals:
-
-**sender**
-   The model class.
-
-**instance**
-   The actual instance being procceed
-
-**name**
-   Transition name
-
-**source**
-   Source model state
-
-**target**
-   Target model state
-
-
-Changelog
----------
-
-django-fsm 1.2.0 2011-03-23
-    * Add pre_transition and post_transition signals
-
-django-fsm 1.1.0 2011-02-22
-    * Add support for transition conditions 
-    * Allow multiple FSMField in one model
-    * Contribute get_available_FIELD_transitions for model class
-
-django-fsm 1.0.0 2010-10-12
-    * Initial public release
-
+* Does support arguments to conditions functions

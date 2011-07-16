@@ -1,8 +1,0 @@
-django==1.2.1
-
-# tests only
-ipython
-ipdb
-django-jenkins
-
-
