@@ -11,8 +11,10 @@ class FSMMeta(object):
     def _get_state_field(instance):
         fsm_fields = [c for c in instance.__table__.columns if\
                 isinstance(c.type, FSMField)]
-        if len(fsm_fields) > 1 or len(fsm_fields) == 0:
-            raise TypeError('Couldnt find fsmfield properly')
+        if len(fsm_fields) == 0:
+            raise TypeError('No FSMField found in model')
+        if len(fsm_fields) > 1:
+            raise TypeError('More than one FSMField found in model')
         else:
             return fsm_fields[0]
     
