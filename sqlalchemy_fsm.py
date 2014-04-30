@@ -2,6 +2,9 @@ import collections
 from functools import wraps
 from sqlalchemy import types as SAtypes
 
+class TransitionNotAllowed(Exception):
+    """Raise when a transition is not allowed."""
+
 class FSMMeta(object):
     def __init__(self):
         self.transitions = collections.defaultdict()
@@ -60,7 +63,7 @@ def transition(source = '*', target = None, conditions = ()):
         def _change_state(instance, *args, **kwargs):
             meta = func._sa_fsm
             if not meta.has_transition(instance):
-                raise NotImplementedError('Cant switch from %s using method %s'\
+                raise TransitionNotAllowed('Cant switch from %s using method %s'\
                         % (FSMMeta.current_state(instance), func.func_name))
             for condition in conditions:
                 if not condition(instance, *args, **kwargs):
