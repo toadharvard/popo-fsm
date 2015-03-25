@@ -1,9 +1,9 @@
-Finite state machine field for sqlalchemy (based on django-fsm)
+Finite state machine field for plain old python objects (POPOs) (based on sqlalchemy-fsm)
 ==============================================================
 
-sqlalchemy-fsm adds declarative states management for sqlalchemy models.
-Instead of adding some state field to a model, and manage its
-values by hand, you could use FSMState field and mark model methods
+popo-fsm adds declarative states management for plain old python objects (POPO).
+Instead of adding some state field to a POPO, and managing its
+values by hand, you could use a plain old python field and mark POPO methods
 with the `transition` decorator. Your method will contain the side-effects
 of the state change.
 
@@ -13,16 +13,17 @@ before a transition is allowed.
 Usage
 -----
 
-Add FSMState field to you model
-    from sqlalchemy_fsm import FSMField, transition
+Add a plain old python field to you POPO
+    from popo_fsm import transition
 
-    class BlogPost(db.Model):
-        state = db.Column(FSMField, nullable = False)
+    class BlogPost(object):
+        def __init__():
+            self.state = 'new'
 
 
-Use the `transition` decorator to annotate model methods
+Use the `transition` decorator to annotate POPO methods
 
-    @transition(source='new', target='published')
+    @transition('state', source='new', target='published')
     def publish(self):
         """
         This function may contain side-effects, 
@@ -34,9 +35,9 @@ Use the `transition` decorator to annotate model methods
 You can use `*` for source, to allow switching to `target` from any state.
 
 If calling publish() succeeds without raising an exception, the state field
-will be changed, but not written to the database.
+will be changed.
 
-    from sqlalchemy_fsm import can_proceed
+    from popo_fsm import can_proceed
 
     def publish_view(request, post_id):
         post = get_object__or_404(BlogPost, pk=post_id)
@@ -59,7 +60,7 @@ normally. Say publish() required a date for some reason:
 
 If you require some conditions to be met before changing state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
-that take one argument, the model instance.  The function must return either
+that take one argument, the POPO instance.  The function must return either
 `True` or `False` or a value that evaluates to `True` or `False`. If all
 functions return `True`, all conditions are considered to be met and transition
 is allowed to happen. If one of the functions return `False`, the transition
@@ -73,31 +74,31 @@ You can use ordinary functions
            return False
         return True
 
-Or model methods
+Or POPO methods
 
     def can_destroy(self):
         return self.is_under_investigation()
 
 Use the conditions like this:
 
-    @transition(source='new', target='published', conditions=[can_publish])
+    @transition('state', source='new', target='published', conditions=[can_publish])
     def publish(self):
         """
         Side effects galore
         """
 
-    @transition(source='*', target='destroyed', conditions=[can_destroy])
+    @transition('state', source='*', target='destroyed', conditions=[can_destroy])
     def destroy(self):
         """
         Side effects galore
         """
 
 
-How does sqlalchemy-fsm diverge from django-fsm?
+How does popo-fsm diverge from sqlalchemy-fsm?
 ------------------------------------------------
 
-* Can't commit data from within transition-decorated functions
+* Works with POPOs, doesn't depend on sqlalchemy
 
-* No pre/post signals
+* Has no special support for sqlalchemy
 
-* Does support arguments to conditions functions
+* Supports multiple state fields in a single object
