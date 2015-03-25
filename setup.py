@@ -5,6 +5,8 @@ setup(name='popo-fsm',
       url='https://github.com/redpandalabs/popo-fsm',
       py_modules=['popo_fsm'],
       license='MIT License',
+      author='Red Panda Innovation Labs',
+      author_email='nitish@redpanda.co.in',
       classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
