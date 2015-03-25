@@ -2,11 +2,9 @@ from setuptools import setup, find_packages
 
 setup(name='popo-fsm',
       version='0.0.1',
-      url='https://github.com/gadventures/sqlalchemy-fsm',
-      packages=find_packages(),
-      include_package_data=True,
+      url='https://github.com/redpandalabs/popo-fsm',
+      py_modules=['popo_fsm'],
       license='MIT License',
-      platforms=['any'],
       classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
