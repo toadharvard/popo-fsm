@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='popo_fsm',
+setup(name='popo-fsm',
       version='0.0.1',
       url='https://github.com/redpandalabs/popo-fsm',
       py_modules=['popo_fsm'],
