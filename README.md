@@ -10,8 +10,23 @@ of the state change.
 The decorator also takes a list of conditions, all of which must be met
 before a transition is allowed.
 
-Usage
------
+Definition
+----------
+    @transition('field_name', source='state1', target='state2')
+
+Here, 'field_name' is the name of the field/property/attribute which needs
+to change from 'state1' to 'state2'.
+
+The `source` can also be a list of possible states/values from which the field
+can move to the `target` state/value. e.g.
+
+    @transition('field_name', source=['new', 'draft'], target='published')
+
+In case the decorated method is called when the field value is not one of
+those specified in `source`, a `TransitionNotAllowed` exception is thrown.
+
+Example
+-------
 
 Add a plain old python field to you POPO
     from popo_fsm import transition
