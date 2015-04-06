@@ -28,7 +28,7 @@ those specified in `source`, a `TransitionNotAllowed` exception is thrown.
 Example
 -------
 
-Add a plain old python field to you POPO
+Add a plain old python field to your POPO
     from popo_fsm import transition
 
     class BlogPost(object):
