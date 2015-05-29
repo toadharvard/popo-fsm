@@ -1,6 +1,6 @@
 import collections
 from functools import wraps
-
+import six
 
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed."""
@@ -36,7 +36,7 @@ def transition(field, source='*', target=None, conditions=()):
     def inner_transition(func):
         if not hasattr(func, '_sa_fsm'):
             setattr(func, '_sa_fsm', FSMMeta(field))
-        if isinstance(source, collections.Sequence) and not isinstance(source, basestring):
+        if isinstance(source, collections.Sequence) and not isinstance(source, six.string_types):
             for state in source:
                 func._sa_fsm.transitions[state] = target
         else:
@@ -48,7 +48,7 @@ def transition(field, source='*', target=None, conditions=()):
             meta = func._sa_fsm
             if not meta.has_transition(instance):
                 raise TransitionNotAllowed('Cant switch from %s using method %s'
-                                           % (meta.current_state(instance), func.func_name))
+                                           % (meta.current_state(instance), func.__name__))
             for condition in conditions:
                 if not condition(instance, *args, **kwargs):
                     return False
