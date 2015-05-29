@@ -66,4 +66,8 @@ def can_proceed(bound_method, *args, **kwargs):
     if not hasattr(bound_method, '_sa_fsm'):
         raise NotImplementedError('%s method is not transition' % bound_method.im_func.__name__)
     meta = bound_method._sa_fsm
-    return meta.has_transition(bound_method.im_self) and meta.conditions_met(bound_method.im_self, *args, **kwargs)
+
+    if six.PY3:
+        return meta.has_transition(bound_method.__self__) and meta.conditions_met(bound_method.__self__, *args, **kwargs)
+    else:
+        return meta.has_transition(bound_method.im_self) and meta.conditions_met(bound_method.im_self, *args, **kwargs)
