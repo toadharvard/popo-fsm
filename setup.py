@@ -14,6 +14,7 @@ setup(name='popo-fsm',
       license='MIT License',
       author='Red Panda Innovation Labs',
       author_email='nitish@redpanda.co.in',
+      install_requires = ['six',],
       classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
