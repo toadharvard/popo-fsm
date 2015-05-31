@@ -1,6 +1,6 @@
 import collections
-from functools import wraps
 import six
+from functools import wraps
 
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed."""
@@ -15,21 +15,17 @@ class FSMMeta(object):
     def current_state(self, instance):
         return getattr(instance, self.field_name)
 
+    def next_state(self, instance):
+        return self.transitions.get(self.current_state(instance)) or self.transitions.get('*')
+
     def has_transition(self, instance):
-        return self.current_state(instance) in self.transitions or '*' in self.transitions
+        return self.next_state(instance) is not None
 
     def conditions_met(self, instance, *args, **kwargs):
-        current_state = self.current_state(instance)
-        next_state = current_state in self.transitions and self.transitions[current_state] or self.transitions['*']
-        return all(map(lambda f: f(instance, *args, **kwargs), self.conditions[next_state]))
+        return all(map(lambda f: f(instance, *args, **kwargs), self.conditions[self.next_state(instance)]))
 
     def to_next_state(self, instance):
-        current_state = self.current_state(instance)
-        try:
-            next_state = self.transitions[current_state]
-        except KeyError:
-            next_state = self.transitions['*']
-        setattr(instance, self.field_name, next_state)
+        setattr(instance, self.field_name, self.next_state(instance))
 
 
 def transition(field, source='*', target=None, conditions=()):
@@ -64,10 +60,8 @@ def transition(field, source='*', target=None, conditions=()):
 
 def can_proceed(bound_method, *args, **kwargs):
     if not hasattr(bound_method, '_sa_fsm'):
-        raise NotImplementedError('%s method is not transition' % bound_method.im_func.__name__)
+        func = bound_method.__func__ if six.PY3 else bound_method.im_func
+        raise NotImplementedError('%s method is not transition' % func.__name__)
     meta = bound_method._sa_fsm
-
-    if six.PY3:
-        return meta.has_transition(bound_method.__self__) and meta.conditions_met(bound_method.__self__, *args, **kwargs)
-    else:
-        return meta.has_transition(bound_method.im_self) and meta.conditions_met(bound_method.im_self, *args, **kwargs)
+    instance = bound_method.__self__ if six.PY3 else bound_method.im_self
+    return meta.has_transition(instance) and meta.conditions_met(instance, *args, **kwargs)

@@ -6,7 +6,7 @@ except IOError:
     long_description = ''
 
 setup(name='popo-fsm',
-      version='0.0.1',
+      version='0.0.2',
       description='Plain old python object finite state machine support.',
       long_description=long_description,
       url='https://github.com/redpandalabs/popo-fsm',
