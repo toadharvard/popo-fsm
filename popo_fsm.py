@@ -2,6 +2,7 @@ import collections
 import six
 from functools import wraps
 
+
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed."""
 
@@ -32,11 +33,10 @@ def transition(field, source='*', target=None, conditions=()):
     def inner_transition(func):
         if not hasattr(func, '_sa_fsm'):
             setattr(func, '_sa_fsm', FSMMeta(field))
-        if isinstance(source, collections.Sequence) and not isinstance(source, six.string_types):
-            for state in source:
-                func._sa_fsm.transitions[state] = target
-        else:
-            func._sa_fsm.transitions[source] = target
+        sources = source if (
+            isinstance(source, collections.Sequence) and not isinstance(source, six.string_types)) else [source]
+        for state in sources:
+            func._sa_fsm.transitions[state] = target
         func._sa_fsm.conditions[target] = conditions
 
         @wraps(func)
