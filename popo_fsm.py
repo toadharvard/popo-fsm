@@ -29,7 +29,7 @@ class FSMMeta(object):
         setattr(instance, self.field_name, self.next_state(instance))
 
 
-def transition(field, source='*', target=None, conditions=()):
+def transition(field, source='*', target=None, conditions=(), before=False):
     def inner_transition(func):
         if not hasattr(func, '_sa_fsm'):
             setattr(func, '_sa_fsm', FSMMeta(field))
@@ -48,9 +48,14 @@ def transition(field, source='*', target=None, conditions=()):
             for condition in conditions:
                 if not condition(instance, *args, **kwargs):
                     return False
-            func(instance, *args, **kwargs)
-            meta.to_next_state(instance)
-
+            
+            if before:
+                meta.to_next_state(instance)
+                func(instance, *args, **kwargs)
+            else:
+                func(instance, *args, **kwargs)
+                meta.to_next_state(instance)
+            
         return _change_state
 
     if not target:
